@@ -121,6 +121,7 @@ def search_options():
         else:
             exit = input("Please add a task first. ")
             break
+    clean()
 
 
 def search_employee():
@@ -131,26 +132,31 @@ def search_employee():
     c.execute("""
               SELECT user_name,task_name
               FROM Tasks
-              WHERE user_name == 'search_name' """)
-
+              WHERE user_name LIKE '%{}%'""".format(search_name))
     rows = c.fetchall()
     i = 0
-    print("List of entries containing that name:\n")
+    print("List of entries containing '{}':\n".format(search_name))
     for row in rows:
-        i += 1
-        print(i,")", ' | '.join(str(string) for string in row))
+      i += 1
+      print(i,")", ' | '.join(str(string) for string in row))
+      print(len(rows))
     # control of selection
-    while True:
-        item_selected = input("\nSelect a number for details: ")
-        try:
-            item_selected = int(item_selected)
-            if item_selected < 0:
-                zero_validation = item_selected / 0
-            break
-        except ValueError:
-            print("Please enter a valid number")
-        except ZeroDivisionError:
-            print("Please enter a valid number")
+    if i == 0:
+        exit = input("No match!\nPress anything to continue. ")
+    else:
+        while True:
+            item_selected = input("\nSelect a number for details: ")
+            try:
+                item_selected = int(item_selected)
+                if item_selected < 0:
+                    zero_validation = item_selected / 0
+                break
+            except ValueError:
+                print("Please enter a valid number")
+            except ZeroDivisionError:
+                print("Please enter a valid number")
+    clean()
+
 
 def search_date():
     pass
