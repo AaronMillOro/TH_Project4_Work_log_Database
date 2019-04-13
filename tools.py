@@ -15,36 +15,31 @@ e) Return to main menu\n
 
 def initialize(data):
     """Store data in SQL database """
+    # info variable is the input from user
     info = data
     presence_log = os.path.isfile("work_log.db")
     if presence_log == False:
-        # Creates table
         conn = sqlite3.connect("work_log.db")
         c = conn.cursor()
-        c.execute("""CREATE TABLE tasks (
-                                        user_name text,
-                                        task_name text,
-                                        task_date text,
-                                        task_time integer,
-                                        notes text
-                                        )""")
+        c.execute("""CREATE TABLE Tasks(
+                                       user_name text,
+                                       task_name text,
+                                       task_date text,
+                                       task_time integer,
+                                       notes text
+                                       )""")
     else:
-        # Insert row with data
         conn = sqlite3.connect("work_log.db")
         with conn:
             c = conn.cursor()
-            c.execute("""INSERT INTO tasks VALUES (
-                                              :user_name,
-                                              :task_name,
-                                              :task_date,
-                                              :task_time,
-                                              :notes)""",info)
+            c.execute("""INSERT INTO Tasks VALUES(
+                                                  :user_name,
+                                                  :task_name,
+                                                  :task_date,
+                                                  :task_time,
+                                                  :notes)""",info)
         conn.commit()
         conn.close()
-
-
-def read_db():
-    pass
 
 
 def clean():
@@ -87,6 +82,7 @@ def add_task():
             print("Please enter a positive number")
     notes = input("Notes: ")
     save = input("\nDo you want to save the entry [y] :").lower()
+    # Ask the user wheter the entry should be stored
     if save != "y":
         exit = input("Entry not recorded. ")
     else:
@@ -100,6 +96,7 @@ def add_task():
         # Add entry into SQL db
         initialize(data)
         exit = input("Entry recorded! ")
+    clean()
 
 
 def search_options():
@@ -108,10 +105,8 @@ def search_options():
         presence_log = os.path.isfile("work_log.db")
         if presence_log == True:
             next_action = input(MENU_SEARCH)
-            read_db()
-
+            clean()
             if next_action.lower() == "a":
-                # search_employee(task_log)
                 search_employee()
             elif next_action.lower() == "b":
                 search_date()
@@ -129,8 +124,33 @@ def search_options():
 
 
 def search_employee():
-    pass
+    """Search an entry in SQL database by employee name"""
+    search_name = input("Name of employee: ")
+    conn = sqlite3.connect("work_log.db")
+    c = conn.cursor()
+    c.execute("""
+              SELECT user_name,task_name
+              FROM Tasks
+              WHERE user_name == 'search_name' """)
 
+    rows = c.fetchall()
+    i = 0
+    print("List of entries containing that name:\n")
+    for row in rows:
+        i += 1
+        print(i,")", ' | '.join(str(string) for string in row))
+    # control of selection
+    while True:
+        item_selected = input("\nSelect a number for details: ")
+        try:
+            item_selected = int(item_selected)
+            if item_selected < 0:
+                zero_validation = item_selected / 0
+            break
+        except ValueError:
+            print("Please enter a valid number")
+        except ZeroDivisionError:
+            print("Please enter a valid number")
 
 def search_date():
     pass

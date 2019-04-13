@@ -17,7 +17,6 @@ q) Quit program\n
 def main_menu():
     """Main loop with options"""
     while True:
-        clean()
         choice = input(MAIN_MENU)
         clean()
         if choice.lower() == "a":
