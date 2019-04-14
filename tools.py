@@ -1,4 +1,5 @@
 import datetime
+import itertools
 import sqlite3
 import os
 
@@ -135,11 +136,10 @@ def search_employee():
               WHERE user_name LIKE '%{}%'""".format(search_name))
     rows = c.fetchall()
     i = 0
-    print("List of entries containing '{}':\n".format(search_name))
+    print("Task performed by '{}':\n".format(search_name))
     for row in rows:
       i += 1
       print(i,")", ' | '.join(str(string) for string in row))
-      print(len(rows))
     # control of selection
     if i == 0:
         exit = input("No match!\nPress anything to continue. ")
@@ -148,23 +148,189 @@ def search_employee():
             item_selected = input("\nSelect a number for details: ")
             try:
                 item_selected = int(item_selected)
-                if item_selected < 0:
+                if item_selected <= 0:
                     zero_validation = item_selected / 0
-                break
+                elif item_selected > len(rows):
+                    print("Please enter a valid number")
+                else:
+                    break
             except ValueError:
                 print("Please enter a valid number")
             except ZeroDivisionError:
                 print("Please enter a valid number")
+        # Show item details
+        c.execute("""
+                  SELECT user_name,task_name,task_date,task_time,notes
+                  FROM Tasks
+                  WHERE user_name LIKE '%{}%'
+                  """.format(search_name))
+        rows = c.fetchall()
+        i = ["Employee","Task","Date","Time (min)","Notes"]
+        print("\n","="*35)
+        for (key,item) in zip(i,rows[item_selected-1]):
+            print(key,":",item)
+        exit = input("\nPress anything to continue. ")
+    clean()
+
+
+def search_time():
+    """Search entry by time spent"""
+    while True:
+        timing = input("Time spent (rounded minutes): ")
+        try:
+            timing = int(timing)
+            if timing <= 0:
+                zero_validation = timing / 0
+            break
+        except ValueError:
+            print("Please enter a valid number")
+        except ZeroDivisionError:
+            print("Please enter a positive number")
+    _timing = (str(timing),)
+    conn = sqlite3.connect("work_log.db")
+    c = conn.cursor()
+    c.execute("""
+              SELECT task_name
+              FROM Tasks
+              WHERE task_time = ?""", _timing)
+    rows = c.fetchall()
+    i = 0
+    print("\nTasks of {} minutes:\n".format(timing))
+    for row in rows:
+      i += 1
+      print(i,")", ' | '.join(str(string) for string in row))
+    # control of selection
+    if i == 0:
+        exit = input("No match found!\nPress anything to continue. ")
+    else:
+        while True:
+            item_selected = input("\nSelect a number for details: ")
+            try:
+                item_selected = int(item_selected)
+                if item_selected <= 0:
+                    zero_validation = item_selected / 0
+                elif item_selected > len(rows):
+                    print("Please enter a valid number")
+                else:
+                    break
+            except ValueError:
+                print("Please enter a valid number")
+            except ZeroDivisionError:
+                print("Please enter a valid number")
+        # Show item details
+        c.execute("""
+                  SELECT user_name,task_name,task_date,task_time,notes
+                  FROM Tasks
+                  WHERE task_time = ?""",_timing)
+
+        rows = c.fetchall()
+        i = ["Employee","Task","Date","Time (min)","Notes"]
+        print("\n","="*35)
+        for (key,item) in zip(i,rows[item_selected-1]):
+            print(key,":",item)
+        exit = input("\nPress anything to continue. ")
     clean()
 
 
 def search_date():
-    pass
-
-
-def search_time():
-    pass
+    while True:
+        search_date = input("Date [DD/MM/YYYY]: ")
+        try:
+            search_date = datetime.datetime.strptime(search_date, "%d/%m/%Y")
+            break
+        except ValueError:
+            print("That's not a valid format. Please try again")
+    search_date = str(search_date)
+    conn = sqlite3.connect("work_log.db")
+    c = conn.cursor()
+    c.execute("""
+              SELECT task_name
+              FROM Tasks
+              WHERE task_date LIKE '%{}%'
+              """.format(search_date))
+    rows = c.fetchall()
+    i = 0
+    print("Tasks conducted on '{}':\n".format(search_date))
+    for row in rows:
+      i += 1
+      print(i,")", ' | '.join(str(string) for string in row))
+    # control of selection
+    if i == 0:
+        exit = input("No match!\nPress anything to continue. ")
+    else:
+        while True:
+            item_selected = input("\nSelect a number for details: ")
+            try:
+                item_selected = int(item_selected)
+                if item_selected <= 0:
+                    zero_validation = item_selected / 0
+                elif item_selected > len(rows):
+                    print("Please enter a valid number")
+                else:
+                    break
+            except ValueError:
+                print("Please enter a valid number")
+            except ZeroDivisionError:
+                print("Please enter a valid number")
+        # Show item details
+        c.execute("""
+                  SELECT user_name,task_name,task_date,task_time,notes
+                  FROM Tasks
+                  WHERE task_date LIKE '%{}%'
+                  """.format(search_date))
+        rows = c.fetchall()
+        i = ["Employee","Task","Date","Time (min)","Notes"]
+        print("\n","="*35)
+        for (key,item) in zip(i,rows[item_selected-1]):
+            print(key,":",item)
+        exit = input("\nPress anything to continue. ")
+    clean()
 
 
 def search_string():
-    pass
+    """Search an entry in SQL database by employee name"""
+    search_word = input("Enter keyword to search: ")
+    conn = sqlite3.connect("work_log.db")
+    c = conn.cursor()
+    c.execute("""
+              SELECT task_name
+              FROM Tasks
+              WHERE task_name LIKE '%{}%'
+              OR notes LIKE '%{}%'""".format(search_word, search_word))
+    rows = c.fetchall()
+    i = 0
+    print("Tasks containing '{}':\n".format(search_word))
+    for row in rows:
+      i += 1
+      print(i,")", ' | '.join(str(string) for string in row))
+    # control of selection
+    if i == 0:
+        exit = input("No match!\nPress anything to continue. ")
+    else:
+        while True:
+            item_selected = input("\nSelect a number for details: ")
+            try:
+                item_selected = int(item_selected)
+                if item_selected <= 0:
+                    zero_validation = item_selected / 0
+                elif item_selected > len(rows):
+                    print("Please enter a valid number")
+                else:
+                    break
+            except ValueError:
+                print("Please enter a valid number")
+            except ZeroDivisionError:
+                print("Please enter a valid number")
+        # Show item details
+        c.execute("""
+                  SELECT user_name,task_name,task_date,task_time,notes
+                  FROM Tasks
+                  WHERE task_name LIKE '%{}%'
+                  OR notes LIKE '%{}%'""".format(search_word, search_word))
+        rows = c.fetchall()
+        i = ["Employee","Task","Date","Time (min)","Notes"]
+        print("\n","="*35)
+        for (key,item) in zip(i,rows[item_selected-1]):
+            print(key,":",item)
+        exit = input("\nPress anything to continue. ")
+    clean()
