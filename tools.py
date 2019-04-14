@@ -83,7 +83,7 @@ def add_task():
             print("Please enter a positive number")
     notes = input("Notes: ")
     save = input("\nDo you want to save the entry [y] :").lower()
-    # Ask the user wheter the entry should be stored
+    # Ask the user if the entry should be stored
     if save != "y":
         exit = input("Entry not recorded. ")
     else:
@@ -107,16 +107,43 @@ def search_options():
         if presence_log == True:
             next_action = input(MENU_SEARCH)
             clean()
+
             if next_action.lower() == "a":
-                search_employee()
+                search_name = input("Name of employee: ")
+                search_employee(search_name)
+
             elif next_action.lower() == "b":
-                search_date()
+                while True:
+                    s_date = input("Date [DD/MM/YYYY]: ")
+                    try:
+                        s_date = datetime.datetime.strptime(s_date,"%d/%m/%Y")
+                        break
+                    except ValueError:
+                        print("That's not a valid format. Please try again")
+                s_date = str(s_date)
+                search_date(s_date)
+
             elif next_action.lower() == "c":
-                search_time()
+                while True:
+                    timing = input("Time spent (rounded minutes): ")
+                    try:
+                        timing = int(timing)
+                        if timing <= 0:
+                            zero_validation = timing / 0
+                        break
+                    except ValueError:
+                        print("Please enter a valid number")
+                    except ZeroDivisionError:
+                        print("Please enter a positive number")
+                search_time(timing)
+
             elif next_action.lower() == "d":
-                search_string()
+                search_word = input("Enter keyword to search: ")
+                search_string(search_word)
+
             elif next_action.lower() == "e":
                 break
+
             else:
                 print("'{}' Invalid option! Try again".format(next_action))
         else:
@@ -125,18 +152,17 @@ def search_options():
     clean()
 
 
-def search_employee():
+def search_employee(self):
     """Search an entry in SQL database by employee name"""
-    search_name = input("Name of employee: ")
     conn = sqlite3.connect("work_log.db")
     c = conn.cursor()
     c.execute("""
               SELECT user_name,task_name
               FROM Tasks
-              WHERE user_name LIKE '%{}%'""".format(search_name))
+              WHERE user_name LIKE '%{}%'""".format(self))
     rows = c.fetchall()
     i = 0
-    print("Task performed by '{}':\n".format(search_name))
+    print("Task performed by '{}':\n".format(self))
     for row in rows:
       i += 1
       print(i,")", ' | '.join(str(string) for string in row))
@@ -163,7 +189,7 @@ def search_employee():
                   SELECT user_name,task_name,task_date,task_time,notes
                   FROM Tasks
                   WHERE user_name LIKE '%{}%'
-                  """.format(search_name))
+                  """.format(self))
         rows = c.fetchall()
         i = ["Employee","Task","Date","Time (min)","Notes"]
         print("\n","="*35)
@@ -171,22 +197,13 @@ def search_employee():
             print(key,":",item)
         exit = input("\nPress anything to continue. ")
     clean()
+    # this return step is to perfom Unit tests
+    return rows
 
 
-def search_time():
+def search_time(self):
     """Search entry by time spent"""
-    while True:
-        timing = input("Time spent (rounded minutes): ")
-        try:
-            timing = int(timing)
-            if timing <= 0:
-                zero_validation = timing / 0
-            break
-        except ValueError:
-            print("Please enter a valid number")
-        except ZeroDivisionError:
-            print("Please enter a positive number")
-    _timing = (str(timing),)
+    _timing = (str(self),)
     conn = sqlite3.connect("work_log.db")
     c = conn.cursor()
     c.execute("""
@@ -195,7 +212,7 @@ def search_time():
               WHERE task_time = ?""", _timing)
     rows = c.fetchall()
     i = 0
-    print("\nTasks of {} minutes:\n".format(timing))
+    print("\nTasks of {} minutes:\n".format(self))
     for row in rows:
       i += 1
       print(i,")", ' | '.join(str(string) for string in row))
@@ -222,7 +239,6 @@ def search_time():
                   SELECT user_name,task_name,task_date,task_time,notes
                   FROM Tasks
                   WHERE task_time = ?""",_timing)
-
         rows = c.fetchall()
         i = ["Employee","Task","Date","Time (min)","Notes"]
         print("\n","="*35)
@@ -230,27 +246,22 @@ def search_time():
             print(key,":",item)
         exit = input("\nPress anything to continue. ")
     clean()
+    return rows
 
 
-def search_date():
-    while True:
-        search_date = input("Date [DD/MM/YYYY]: ")
-        try:
-            search_date = datetime.datetime.strptime(search_date, "%d/%m/%Y")
-            break
-        except ValueError:
-            print("That's not a valid format. Please try again")
-    search_date = str(search_date)
+def search_date(self):
+    """Search by specific date in a defined format"""
+    _date = self
     conn = sqlite3.connect("work_log.db")
     c = conn.cursor()
     c.execute("""
               SELECT task_name
               FROM Tasks
               WHERE task_date LIKE '%{}%'
-              """.format(search_date))
+              """.format(_date))
     rows = c.fetchall()
     i = 0
-    print("Tasks conducted on '{}':\n".format(search_date))
+    print("Tasks conducted on '{}':\n".format(_date))
     for row in rows:
       i += 1
       print(i,")", ' | '.join(str(string) for string in row))
@@ -277,7 +288,7 @@ def search_date():
                   SELECT user_name,task_name,task_date,task_time,notes
                   FROM Tasks
                   WHERE task_date LIKE '%{}%'
-                  """.format(search_date))
+                  """.format(_date))
         rows = c.fetchall()
         i = ["Employee","Task","Date","Time (min)","Notes"]
         print("\n","="*35)
@@ -285,21 +296,21 @@ def search_date():
             print(key,":",item)
         exit = input("\nPress anything to continue. ")
     clean()
+    return rows
 
 
-def search_string():
-    """Search an entry in SQL database by employee name"""
-    search_word = input("Enter keyword to search: ")
+def search_string(self):
+    """Search an entry in SQL database by keyword"""
     conn = sqlite3.connect("work_log.db")
     c = conn.cursor()
     c.execute("""
               SELECT task_name
               FROM Tasks
               WHERE task_name LIKE '%{}%'
-              OR notes LIKE '%{}%'""".format(search_word, search_word))
+              OR notes LIKE '%{}%'""".format(self, self))
     rows = c.fetchall()
     i = 0
-    print("Tasks containing '{}':\n".format(search_word))
+    print("Tasks containing '{}':\n".format(self))
     for row in rows:
       i += 1
       print(i,")", ' | '.join(str(string) for string in row))
@@ -326,7 +337,7 @@ def search_string():
                   SELECT user_name,task_name,task_date,task_time,notes
                   FROM Tasks
                   WHERE task_name LIKE '%{}%'
-                  OR notes LIKE '%{}%'""".format(search_word, search_word))
+                  OR notes LIKE '%{}%'""".format(self, self))
         rows = c.fetchall()
         i = ["Employee","Task","Date","Time (min)","Notes"]
         print("\n","="*35)
@@ -334,3 +345,4 @@ def search_string():
             print(key,":",item)
         exit = input("\nPress anything to continue. ")
     clean()
+    return rows
