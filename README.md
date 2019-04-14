@@ -13,22 +13,25 @@ This terminal application is part of the **Treehouse Python Techdegree**. This a
 ```
 * If the user choose to find a previous entry, ths script propose four options: 
 
-  * Find by **employee**
+1. Find by **employee**
 ```
 The user can enter the employee name and a list of employees with entries is displayed 
 allowing the user to select one entry to see details.
 ```
-  * Find by **date**
+
+2. Find by **date**
 ```
 A list of entries with a given date is displayed and the user is able to choose one to see details.
 ```
-  * Find by **time spent**
+
+3. Find by **time spent**
 ```
 The user can enter the amount of time spent (minutes) on a task and a list of entries
 containing that amount of time spent is displayed. 
 The user can choose one to see details.
 ```
-  * Find by **keyword**
+
+4. Find by **keyword**
 ```
 The user can enter a keyword and a list of entries containing that keyword in task name 
 or notes is displayed. The user can choose one to see details.
